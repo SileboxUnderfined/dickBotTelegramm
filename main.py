@@ -1,5 +1,6 @@
 from telebot.async_telebot import AsyncTeleBot
 from os import environ as envv
+import asyncio
 
 bot = AsyncTeleBot(envv['BOT_TOKEN'])
 
@@ -7,5 +8,4 @@ bot = AsyncTeleBot(envv['BOT_TOKEN'])
 async def send_welcome(message):
     await bot.reply_to(message,"""hi\ndebil\n""")
 
-import asyncio
 asyncio.run(bot.polling())
