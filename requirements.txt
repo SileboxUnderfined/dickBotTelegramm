@@ -1,3 +1,5 @@
 pyTelegramBotAPI
 asyncio
 aiohttp
+aiosqlite
+quickchart.io

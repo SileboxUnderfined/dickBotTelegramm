@@ -152,3 +152,8 @@ cython_debug/
 #.idea/
 *.iml
 *.xml
+
+data.db
+data.db-journal
+
+.DS_STORE
