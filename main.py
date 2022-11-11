@@ -33,6 +33,11 @@ async def getSorted(data):
 async def getUserInfo(chat_id,user_id):
     return await bot.get_chat_member(chat_id, user_id)
 
+async def getUserName(chat_id, user_id):
+    user_info = await getUserInfo(chat_id, user_id)
+    if user_info.user.username == None: return user_info.user.first_name
+    return user_info.user.username
+
 async def createQC(data):
     qc = QuickChart()
     qc.width = 500
@@ -109,9 +114,7 @@ async def top_func(message):
 
                 result = f"Топ лучших:\n"
                 for user in range(len(data)):
-                    user_info = await getUserInfo(chat_id, data[user][0])
-                    print(user_info)
-                    result += f"{user+1}: {user_info.user.username} с хуём в размере {data[user][1]} см\n"
+                    result += f"{user+1}: {await getUserName(chat_id,data[user][0])} с хуём в размере {data[user][1]} см\n"
                 await bot.reply_to(message,result)
 
 @bot.message_handler(commands=["graph"])
@@ -123,13 +126,12 @@ async def graph_func(message):
             if len(data) == 0: await bot.reply_to(message,"вы пока не призывали письки")
             else:
                 data = await getSorted(data)
-                index = data[0][1]
                 dfg = {}
                 for user in data:
-                    user_info = await getUserInfo(chat_id,user[0])
-                    dfg.update({user_info.user.username:user[1]})
+                    dfg.update({await getUserName(chat_id,user[0]):user[1]})
 
                 url = await createQC(dfg)
                 await bot.send_photo(chat_id, url)
+
 
 asyncio.run(bot.polling())
