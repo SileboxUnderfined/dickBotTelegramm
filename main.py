@@ -223,5 +223,16 @@ async def accept_invite(call):
             await db.execute(f"UPDATE users SET dick_length = {looser_dick-bet} WHERE user_id = {looser} AND chat_id = {chat_id}")
             await db.commit()
 
+@bot.message_handler(commands=["my_dick"])
+async def my_dick(message):
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    my_dick = await getUserFromDB(user_id,chat_id)
+    if not my_dick:
+        await bot.reply_to(message,"отрасти сначала хуй")
+        return
+
+    my_dick = my_dick[1]
+    await bot.reply_to(message,f"твой хуй равен {my_dick} см")
 
 asyncio.run(bot.polling())
