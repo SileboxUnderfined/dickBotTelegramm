@@ -33,6 +33,23 @@ async def getSorted(data):
 async def getUserInfo(chat_id,user_id):
     return await bot.get_chat_member(chat_id, user_id)
 
+async def createQC(data):
+    qc = QuickChart()
+    qc.width = 500
+    qc.height = 300
+    qc.config = {
+        "type": "pie",
+        "data": {
+            "labels": [key for key in data.keys()],
+            "datasets": [
+                {
+                    "data": [value for value in data.values()]
+                }
+            ]
+        }
+    }
+    return qc.get_url()
+
 signal.signal(signal.SIGINT, exit_handler)
 
 @bot.message_handler(commands=['start'])
@@ -105,23 +122,7 @@ async def graph_func(message):
                     user_info = await getUserInfo(chat_id,user[0])
                     dfg.update({user_info.user.username:user[1]})
 
-                qc = QuickChart()
-                qc.width = 500
-                qc.height = 300
-                qc.config = {
-                    "type":"pie",
-                    "data": {
-                        "labels":[key for key in dfg.keys()],
-                        "datasets":[
-                            {
-                                "data":[value for value in dfg.values()]
-                            }
-                        ]
-                    }
-                }
-                url = qc.get_url()
+                url = await createQC(dfg)
                 await bot.send_photo(chat_id,url)
-
-
 
 asyncio.run(bot.polling())
