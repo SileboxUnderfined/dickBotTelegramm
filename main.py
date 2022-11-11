@@ -18,7 +18,7 @@ async def genrand():
     return result
 
 async def getNextTime():
-    r = datetime.now() + timedelta(hours=12)
+    r = datetime.now() + timedelta(hours=int(envv['KD']))
     return r.strftime(timeFormat)
 
 async def getDateTime(s):
@@ -50,6 +50,12 @@ async def createQC(data):
     }
     return qc.get_url()
 
+async def getDick(now_dick=0):
+    new_dick = await genrand()
+    result = now_dick + new_dick
+    if result < 0: result = 0
+    return new_dick, result
+
 signal.signal(signal.SIGINT, exit_handler)
 
 @bot.message_handler(commands=['start'])
@@ -59,7 +65,6 @@ async def send_welcome(message):
 
 @bot.message_handler(commands=['dick'])
 async def dick_func(message):
-    new_dick = await genrand()
     next_time = await getNextTime()
     user_id = int(message.from_user.id)
     chat_id = int(message.chat.id)
@@ -69,9 +74,10 @@ async def dick_func(message):
             print(data)
             if len(data) == 0:
                 print([element for element in data])
-                await db.execute(f"INSERT INTO users (user_id, dick_length, next_date, chat_id) VALUES ({user_id},{new_dick}, {next_time}, {message.chat.id})")
+                new_dick, r = await getDick()
+                await db.execute(f"INSERT INTO users (user_id, dick_length, next_date, chat_id) VALUES ({user_id},{r}, {next_time}, {message.chat.id})")
                 await db.commit()
-                await bot.reply_to(message, f"Тебе создали новый хуй, поздравляю. Он равен {new_dick} см.")
+                await bot.reply_to(message, f"Тебе создали новый хуй, поздравляю. Он равен {r} см.")
             else:
                 async with db.execute(f"SELECT next_date FROM users WHERE user_id = {user_id} AND chat_id={chat_id}") as ct:
                     next_timeU = await ct.fetchone()
@@ -84,10 +90,11 @@ async def dick_func(message):
                     await bot.reply_to(message, f"Ты идиот. Жди ещё {r[0]} часов, {r[1]} минут и {r[2]} секунд")
                 else:
                     now_dick = [user[2] for user in data if user[1] == user_id][0]
-                    await db.execute(f"UPDATE users SET dick_length = {new_dick + now_dick} WHERE user_id = {user_id} AND chat_id={chat_id}")
+                    new_dick, r = await getDick(now_dick)
+                    await db.execute(f"UPDATE users SET dick_length = {r} WHERE user_id = {user_id} AND chat_id={chat_id}")
                     await db.execute(f"UPDATE users SET next_date = {next_time} WHERE user_id = {user_id} AND chat_id={chat_id}")
                     await db.commit()
-                    await bot.reply_to(message, f"Твой хер был обновлён на {new_dick}, поздравляю. Сейчас он равен {new_dick + now_dick}")
+                    await bot.reply_to(message, f"Твой хер был обновлён на {new_dick}, поздравляю. Сейчас он равен {r}")
     print("/dick command for ", user_id)
 
 @bot.message_handler(commands=["top"])
@@ -123,6 +130,6 @@ async def graph_func(message):
                     dfg.update({user_info.user.username:user[1]})
 
                 url = await createQC(dfg)
-                await bot.send_photo(chat_id,url)
+                await bot.send_photo(chat_id, url)
 
 asyncio.run(bot.polling())
