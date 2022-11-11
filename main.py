@@ -14,7 +14,7 @@ def exit_handler(sig, frame):
 
 async def genrand():
     result = 0
-    while result == 0: result = randint(-9,9)
+    while result == 0: result = randint(int(envv['start_rand']),int(envv['end_rand']))
     return result
 
 async def getNextTime():
