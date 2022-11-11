@@ -1,4 +1,4 @@
-from telebot.async_telebot import AsyncTeleBot
+from telebot.async_telebot import AsyncTeleBot, types
 from os import environ as envv
 import asyncio, aiosqlite, signal, sys
 from random import randint
@@ -60,6 +60,15 @@ async def getDick(now_dick=0):
     result = now_dick + new_dick
     if result < 0: result = 0
     return new_dick, result
+
+async def getUserFromDB(user_id, chat_id):
+    async with aiosqlite.connect("data.db") as db:
+        async with db.execute(f"SELECT user_id, dick_length FROM users WHERE user_id = {user_id} AND chat_id = {chat_id}") as cursor:
+            data = await cursor.fetchall()
+            if len(data) == 0:
+                return False
+            result = data[0]
+            return result
 
 signal.signal(signal.SIGINT, exit_handler)
 
@@ -132,6 +141,87 @@ async def graph_func(message):
 
                 url = await createQC(dfg)
                 await bot.send_photo(chat_id, url)
+
+@bot.message_handler(commands=['dice'])
+async def dice_func(message):
+    text = message.text.split()
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    if len(text) == 1: await bot.reply_to(message,"Ты не указал ставку!")
+    else:
+        dick_length = await getUserFromDB(user_id,chat_id)
+        if not dick_length:
+            await bot.reply_to(message,"сначала отрасти хуй")
+            return
+        dick_length = dick_length[1]
+        bet = int(text[1])
+        if bet <= 0:
+            await bot.reply_to(message,"поставь ставку с положительным числом.")
+            return
+        if bet > dick_length:
+            await bot.reply_to(message,"У тебя хуй ещё недорос.")
+            return
+
+        markup = types.InlineKeyboardMarkup()
+        accept_button = types.InlineKeyboardButton('принять приглашение',callback_data="accept_invite")
+        markup.add(accept_button)
+        await bot.reply_to(message, f"{user_id}\n{await getUserName(chat_id, user_id)} приглашает вас на меряние письками используя шестигранный кубик!\nСтавка: {bet} см\nЧтобы принять приглашение, нажмите на кнопку ниже.",reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data == "accept_invite")
+async def accept_invite(call):
+    chat_id = call.message.chat.id
+    user_id = call.from_user.id
+    text = call.message.text.split()
+    print(text)
+    bet = int(text[text.index("Ставка:")+1])
+
+    sender_id = int(text[0])
+
+    if sender_id == user_id:
+        await bot.send_message(chat_id,f"{await getUserName(chat_id,user_id)}, ты не можешь мериться писькой с самим собой.")
+        return
+
+    user_dick_length = await getUserFromDB(user_id,chat_id)
+    if not user_dick_length:
+        await bot.send_message(chat_id,f"{await getUserName(chat_id,user_id)}, сначала отрасти хуй")
+        return
+
+    user_dick_length = user_dick_length[1]
+    if user_dick_length < bet:
+        await bot.send_message(chat_id,f"У {await getUserName(chat_id,user_id)} хуй ещё не дорос чтобы играть в такую ставку.")
+        return
+
+    await bot.delete_message(chat_id, call.message.id)
+    await bot.send_message(chat_id,f"{await getUserName(chat_id,user_id)} принимает приглашение {await getUserName(chat_id,sender_id)}")
+    await bot.send_message(chat_id,'кидаем кубики!')
+    user_result = await bot.send_dice(chat_id)
+    sender_result = await bot.send_dice(chat_id)
+    user_result = int(user_result.dice.value)
+    sender_result = int(sender_result.dice.value)
+    winner = 0
+    looser = 0
+
+    if user_result > sender_result:
+        winner = user_id
+        looser = sender_id
+    elif user_result < sender_result:
+        winner = sender_id
+        looser = user_id
+
+    if winner == looser:
+        await bot.send_message(chat_id,"Никто не победил, письки остаются при вас.")
+    else:
+        winner_name = await getUserName(chat_id,winner)
+        looser_name = await getUserName(chat_id,looser)
+        await bot.send_message(chat_id,f"Победил: {winner_name}.\nТеперь {looser_name} отрежут хуй на {bet} см.\nА {winner_name} получит расширение хуя на {bet} см.")
+        async with aiosqlite.connect("data.db") as db:
+            winner_dick = await getUserFromDB(winner, chat_id)
+            looser_dick = await getUserFromDB(looser, chat_id)
+            winner_dick = winner_dick[1]
+            looser_dick = looser_dick[1]
+            await db.execute(f"UPDATE users SET dick_length = {winner_dick+bet} WHERE user_id = {winner} AND chat_id = {chat_id}")
+            await db.execute(f"UPDATE users SET dick_length = {looser_dick-bet} WHERE user_id = {looser} AND chat_id = {chat_id}")
+            await db.commit()
 
 
 asyncio.run(bot.polling())
