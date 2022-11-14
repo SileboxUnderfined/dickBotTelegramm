@@ -8,35 +8,44 @@ from quickchart import QuickChart
 bot = AsyncTeleBot(envv['BOT_TOKEN'])
 timeFormat = "%Y%m%d%H%M%S"
 
+
 def exit_handler(sig, frame):
     print('exiting...')
     sys.exit(0)
+
 
 async def genrand():
     result = 0
     while result == 0: result = randint(int(envv['start_rand']),int(envv['end_rand']))
     return result
 
+
 async def getNextTime():
     r = datetime.now() + timedelta(hours=int(envv['KD']))
     return r.strftime(timeFormat)
 
+
 async def getDateTime(s):
     return datetime.strptime(s,timeFormat)
+
 
 def topSort(x):
     return x[1]
 
+
 async def getSorted(data):
     return list(reversed(sorted(data, key=topSort)))
 
+
 async def getUserInfo(chat_id,user_id):
     return await bot.get_chat_member(chat_id, user_id)
+
 
 async def getUserName(chat_id, user_id):
     user_info = await getUserInfo(chat_id, user_id)
     if user_info.user.username == None: return user_info.user.first_name
     return user_info.user.username
+
 
 async def createQC(data):
     qc = QuickChart()
@@ -55,11 +64,13 @@ async def createQC(data):
     }
     return qc.get_url()
 
+
 async def getDick(now_dick=0):
     new_dick = await genrand()
     result = now_dick + new_dick
     if result < 0: result = 0
     return new_dick, result
+
 
 async def getUserFromDB(user_id, chat_id):
     async with aiosqlite.connect("data.db") as db:
@@ -72,10 +83,12 @@ async def getUserFromDB(user_id, chat_id):
 
 signal.signal(signal.SIGINT, exit_handler)
 
+
 @bot.message_handler(commands=['start'])
 async def send_welcome(message):
     await bot.reply_to(message,"""привет дурак дебильный ебальный\nблагодаря этому боту ты можешь меряться письками с другими дебилами\nчтобы использовать эту бесконечно великую функцию, введи /dick\nвведи /help """)
     print('/start command for', message.from_user)
+
 
 @bot.message_handler(commands=['dick'])
 async def dick_func(message):
@@ -111,6 +124,7 @@ async def dick_func(message):
                     await bot.reply_to(message, f"Твой хер был обновлён на {new_dick}, поздравляю. Сейчас он равен {r}")
     print("/dick command for ", user_id)
 
+
 @bot.message_handler(commands=["top"])
 async def top_func(message):
     chat_id = message.chat.id
@@ -125,6 +139,7 @@ async def top_func(message):
                 for user in range(len(data)):
                     result += f"{user+1}: {await getUserName(chat_id,data[user][0])} с хуём в размере {data[user][1]} см\n"
                 await bot.reply_to(message,result)
+
 
 @bot.message_handler(commands=["graph"])
 async def graph_func(message):
@@ -141,6 +156,7 @@ async def graph_func(message):
 
                 url = await createQC(dfg)
                 await bot.send_photo(chat_id, url)
+
 
 @bot.message_handler(commands=['dice'])
 async def dice_func(message):
@@ -166,6 +182,7 @@ async def dice_func(message):
         accept_button = types.InlineKeyboardButton('принять приглашение',callback_data="accept_invite")
         markup.add(accept_button)
         await bot.reply_to(message, f"{user_id}\n{await getUserName(chat_id, user_id)} приглашает вас на меряние письками используя шестигранный кубик!\nСтавка: {bet} см\nЧтобы принять приглашение, нажмите на кнопку ниже.",reply_markup=markup)
+
 
 @bot.callback_query_handler(func=lambda call: call.data == "accept_invite")
 async def accept_invite(call):
@@ -223,6 +240,7 @@ async def accept_invite(call):
             await db.execute(f"UPDATE users SET dick_length = {looser_dick-bet} WHERE user_id = {looser} AND chat_id = {chat_id}")
             await db.commit()
 
+
 @bot.message_handler(commands=["my_dick"])
 async def my_dick(message):
     chat_id = message.chat.id
@@ -234,6 +252,7 @@ async def my_dick(message):
 
     my_dick = my_dick[1]
     await bot.reply_to(message,f"твой хуй равен {my_dick} см")
+
 
 @bot.message_handler(commands=["global_top"])
 async def global_top(message):
@@ -252,7 +271,7 @@ async def global_top(message):
                     username = await getUserName(user[1], user[0])
                 except Exception:
                     continue
-                
+
                 text += f'{start}: {username} - {user[2]} см\n'
                 start += 1
 

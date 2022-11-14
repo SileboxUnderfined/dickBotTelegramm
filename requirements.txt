@@ -1,5 +1,5 @@
 pyTelegramBotAPI
-asyncio
+asyncio~=3.4.3
 aiohttp
-aiosqlite
+aiosqlite~=0.17.0
 quickchart.io
