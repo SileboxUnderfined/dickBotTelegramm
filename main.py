@@ -1,88 +1,8 @@
 from telebot.async_telebot import AsyncTeleBot, types
-from os import environ as envv
-import asyncio, aiosqlite, signal, sys
-from random import randint
-from datetime import datetime, timedelta
-from quickchart import QuickChart
+import asyncio
+from botFuncs import *
 
 bot = AsyncTeleBot(envv['BOT_TOKEN'])
-timeFormat = "%Y%m%d%H%M%S"
-
-
-def exit_handler(sig, frame):
-    print('exiting...')
-    sys.exit(0)
-
-
-async def genrand():
-    result = 0
-    while result == 0: result = randint(int(envv['start_rand']),int(envv['end_rand']))
-    return result
-
-
-async def getNextTime():
-    r = datetime.now() + timedelta(hours=int(envv['KD']))
-    return r.strftime(timeFormat)
-
-
-async def getDateTime(s):
-    return datetime.strptime(s,timeFormat)
-
-
-def topSort(x):
-    return x[1]
-
-
-async def getSorted(data):
-    return list(reversed(sorted(data, key=topSort)))
-
-
-async def getUserInfo(chat_id,user_id):
-    return await bot.get_chat_member(chat_id, user_id)
-
-
-async def getUserName(chat_id, user_id):
-    user_info = await getUserInfo(chat_id, user_id)
-    if user_info.user.username == None: return user_info.user.first_name
-    return user_info.user.username
-
-
-async def createQC(data):
-    qc = QuickChart()
-    qc.width = 500
-    qc.height = 300
-    qc.config = {
-        "type": "pie",
-        "data": {
-            "labels": [key for key in data.keys()],
-            "datasets": [
-                {
-                    "data": [value for value in data.values()]
-                }
-            ]
-        }
-    }
-    return qc.get_url()
-
-
-async def getDick(now_dick=0):
-    new_dick = await genrand()
-    result = now_dick + new_dick
-    if result < 0: result = 0
-    return new_dick, result
-
-
-async def getUserFromDB(user_id, chat_id):
-    async with aiosqlite.connect("data.db") as db:
-        async with db.execute(f"SELECT user_id, dick_length FROM users WHERE user_id = {user_id} AND chat_id = {chat_id}") as cursor:
-            data = await cursor.fetchall()
-            if len(data) == 0:
-                return False
-            result = data[0]
-            return result
-
-signal.signal(signal.SIGINT, exit_handler)
-
 
 @bot.message_handler(commands=['start'])
 async def send_welcome(message):
@@ -137,7 +57,7 @@ async def top_func(message):
 
                 result = f"Топ лучших:\n"
                 for user in range(len(data)):
-                    result += f"{user+1}: {await getUserName(chat_id,data[user][0])} с хуём в размере {data[user][1]} см\n"
+                    result += f"{user+1}: {await getUserName(bot, chat_id,data[user][0])} с хуём в размере {data[user][1]} см\n"
                 await bot.reply_to(message,result)
 
 
@@ -152,7 +72,7 @@ async def graph_func(message):
                 data = await getSorted(data)
                 dfg = {}
                 for user in data:
-                    dfg.update({await getUserName(chat_id,user[0]):user[1]})
+                    dfg.update({await getUserName(bot, chat_id,user[0]):user[1]})
 
                 url = await createQC(dfg)
                 await bot.send_photo(chat_id, url)
@@ -181,7 +101,7 @@ async def dice_func(message):
         markup = types.InlineKeyboardMarkup()
         accept_button = types.InlineKeyboardButton('принять приглашение',callback_data="accept_invite")
         markup.add(accept_button)
-        await bot.reply_to(message, f"{user_id}\n{await getUserName(chat_id, user_id)} приглашает вас на меряние письками используя шестигранный кубик!\nСтавка: {bet} см\nЧтобы принять приглашение, нажмите на кнопку ниже.",reply_markup=markup)
+        await bot.reply_to(message, f"{user_id}\n{await getUserName(bot, chat_id, user_id)} приглашает вас на меряние письками используя шестигранный кубик!\nСтавка: {bet} см\nЧтобы принять приглашение, нажмите на кнопку ниже.",reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "accept_invite")
@@ -195,21 +115,21 @@ async def accept_invite(call):
     sender_id = int(text[0])
 
     if sender_id == user_id:
-        await bot.send_message(chat_id,f"{await getUserName(chat_id,user_id)}, ты не можешь мериться писькой с самим собой.")
+        await bot.send_message(chat_id,f"{await getUserName(bot, chat_id,user_id)}, ты не можешь мериться писькой с самим собой.")
         return
 
     user_dick_length = await getUserFromDB(user_id,chat_id)
     if not user_dick_length:
-        await bot.send_message(chat_id,f"{await getUserName(chat_id,user_id)}, сначала отрасти хуй")
+        await bot.send_message(chat_id,f"{await getUserName(bot, chat_id,user_id)}, сначала отрасти хуй")
         return
 
     user_dick_length = user_dick_length[1]
     if user_dick_length < bet:
-        await bot.send_message(chat_id,f"У {await getUserName(chat_id,user_id)} хуй ещё не дорос чтобы играть в такую ставку.")
+        await bot.send_message(chat_id,f"У {await getUserName(bot, chat_id,user_id)} хуй ещё не дорос чтобы играть в такую ставку.")
         return
 
     await bot.delete_message(chat_id, call.message.id)
-    await bot.send_message(chat_id,f"{await getUserName(chat_id,user_id)} принимает приглашение {await getUserName(chat_id,sender_id)}")
+    await bot.send_message(chat_id,f"{await getUserName(bot, chat_id,user_id)} принимает приглашение {await getUserName(bot, chat_id,sender_id)}")
     await bot.send_message(chat_id,'кидаем кубики!')
     user_result = await bot.send_dice(chat_id)
     sender_result = await bot.send_dice(chat_id)
@@ -228,8 +148,8 @@ async def accept_invite(call):
     if winner == looser:
         await bot.send_message(chat_id,"Никто не победил, письки остаются при вас.")
     else:
-        winner_name = await getUserName(chat_id,winner)
-        looser_name = await getUserName(chat_id,looser)
+        winner_name = await getUserName(bot, chat_id,winner)
+        looser_name = await getUserName(bot, chat_id,looser)
         await bot.send_message(chat_id,f"Победил: {winner_name}.\nТеперь {looser_name} отрежут хуй на {bet} см.\nА {winner_name} получит расширение хуя на {bet} см.")
         async with aiosqlite.connect("data.db") as db:
             winner_dick = await getUserFromDB(winner, chat_id)
@@ -268,7 +188,7 @@ async def global_top(message):
                 if start == end: break
                 print(user[0])
                 try:
-                    username = await getUserName(user[2], user[0])
+                    username = await getUserName(bot, user[2], user[0])
                 except Exception:
                     continue
 
