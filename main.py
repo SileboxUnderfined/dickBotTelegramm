@@ -258,7 +258,7 @@ async def my_dick(message):
 async def global_top(message):
     text = f"Глобальный топ {envv['GL_TOP_END']} хуеводов:\n"
     async with aiosqlite.connect("data.db") as db:
-        async with db.execute("SELECT dick_length, user_id, chat_id FROM users") as cursor:
+        async with db.execute("SELECT user_id, dick_length, chat_id FROM users") as cursor:
             data = await cursor.fetchall()
             data = await getSorted(data)
             print(data)
@@ -268,11 +268,11 @@ async def global_top(message):
                 if start == end: break
                 print(user[0])
                 try:
-                    username = await getUserName(user[2], user[1])
+                    username = await getUserName(user[2], user[0])
                 except Exception:
                     continue
 
-                text += f'{start+1}: {username} - {user[0]} см\n'
+                text += f'{start+1}: {username} - {user[1]} см\n'
                 start += 1
 
     print(text)
