@@ -235,4 +235,28 @@ async def my_dick(message):
     my_dick = my_dick[1]
     await bot.reply_to(message,f"твой хуй равен {my_dick} см")
 
+@bot.message_handler(commands=["global_top"])
+async def global_top(message):
+    text = f"Глобальный топ {envv['GL_TOP_END']} хуеводов:\n"
+    async with aiosqlite.connect("data.db") as db:
+        async with db.execute("SELECT user_id, chat_id, dick_length FROM users") as cursor:
+            data = await cursor.fetchall()
+            data = await getSorted(data)
+            print(data)
+            start = 1
+            end = envv['GL_TOP_END']
+            for user in data:
+                if start == end: break
+                print(user[0])
+                try:
+                    username = await getUserName(user[1], user[0])
+                except Exception:
+                    continue
+                
+                text += f'{start}: {username} - {user[2]} см\n'
+                start += 1
+
+    print(text)
+    await bot.reply_to(message, text)
+
 asyncio.run(bot.polling())
