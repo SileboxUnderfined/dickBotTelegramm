@@ -263,7 +263,7 @@ async def global_top(message):
             data = await getSorted(data)
             print(data)
             start = 1
-            end = envv['GL_TOP_END']
+            end = int(envv['GL_TOP_END'])
             for user in data:
                 if start == end: break
                 print(user[0])
