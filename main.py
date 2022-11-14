@@ -262,7 +262,7 @@ async def global_top(message):
             data = await cursor.fetchall()
             data = await getSorted(data)
             print(data)
-            start = 1
+            start = 0
             end = int(envv['GL_TOP_END'])
             for user in data:
                 if start == end: break
@@ -272,7 +272,7 @@ async def global_top(message):
                 except Exception:
                     continue
 
-                text += f'{start}: {username} - {user[2]} см\n'
+                text += f'{start+1}: {username} - {user[2]} см\n'
                 start += 1
 
     print(text)
