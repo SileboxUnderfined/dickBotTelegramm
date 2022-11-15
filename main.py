@@ -1,5 +1,6 @@
+import telebot.async_telebot as tb
 from telebot.async_telebot import AsyncTeleBot, types
-import asyncio
+import asyncio, logging, os
 from botFuncs import *
 
 bot = AsyncTeleBot(envv['BOT_TOKEN'])
@@ -198,4 +199,13 @@ async def global_top(message):
     print(text)
     await bot.reply_to(message, text)
 
-asyncio.run(bot.polling())
+
+if __name__ in "__main__":
+    logger = tb.logger
+    tb.logger.setLevel(logging.DEBUG)
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    if not os.path.isdir('logs'):
+        os.mkdir('logs')
+    tb.logger.addHandler(logging.FileHandler(os.path.join('logs', f"{now}.log")))
+
+    asyncio.run(bot.polling())
