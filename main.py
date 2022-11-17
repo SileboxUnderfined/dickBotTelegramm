@@ -38,11 +38,11 @@ async def dick_func(message):
                     await bot.reply_to(message, f"Ты идиот. Жди ещё {r[0]} часов, {r[1]} минут и {r[2]} секунд")
                 else:
                     now_dick = [user[2] for user in data if user[1] == user_id][0]
-                    new_dick, r = await getDick(now_dick)
+                    new_dick, r, operation = await getDick(now_dick)
                     await db.execute(f"UPDATE users SET dick_length = {r} WHERE user_id = {user_id} AND chat_id={chat_id}")
                     await db.execute(f"UPDATE users SET next_date = {next_time} WHERE user_id = {user_id} AND chat_id={chat_id}")
                     await db.commit()
-                    await bot.reply_to(message, f"Твой хер был обновлён на {new_dick}, поздравляю. Сейчас он равен {r}")
+                    await bot.reply_to(message, f"Твой хер был обновлён на {operation}{new_dick}, поздравляю. Сейчас он равен {r}")
     print("/dick command for ", user_id)
 
 

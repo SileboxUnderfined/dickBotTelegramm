@@ -66,18 +66,25 @@ async def createQC(data):
 async def getDick(now_dick=0):
     new_dick = await genrand()
     choice = randint(0,3)
-    result = 0
-    if choice == 0 or (choice == 2 and now_dick == 0) or (choice == 3 and now_dick == 0):
-        result = now_dick + new_dick
-    elif choice == 1:
+    result: int
+    operation: str
+    if choice == 1:
         result = now_dick * new_dick
+        operation = "*"
     elif choice == 2 and now_dick != 0:
         result = round(now_dick // new_dick)
-    elif choice == 3 and now_dick == 0:
+        operation = "//"
+    elif choice == 3 and now_dick != 0:
         result = now_dick ** new_dick
+        operation = '^'
+    else:
+        result = now_dick + new_dick
+        operation = "+"
+
+    print(operation)
     if result < 0: result = 0
     elif result > now_dick + 100: result = now_dick + 100
-    return new_dick, round(result)
+    return new_dick, round(result), operation
 
 
 async def getUserFromDB(user_id, chat_id):
