@@ -64,9 +64,19 @@ async def createQC(data):
 
 async def getDick(now_dick=0):
     new_dick = await genrand()
-    result = now_dick + new_dick
+    choice = randint(0,3)
+    result = 0
+    if choice == 0 or (choice == 2 and now_dick == 0) or (choice == 3 and now_dick == 0):
+        result = now_dick + new_dick
+    elif choice == 1:
+        result = now_dick * new_dick
+    elif choice == 2 and now_dick != 0:
+        result = round(now_dick // new_dick)
+    elif choice == 3 and now_dick == 0:
+        result = now_dick ** new_dick
     if result < 0: result = 0
-    return new_dick, result
+    elif result > now_dick + 100: result = now_dick + 100
+    return new_dick, round(result)
 
 
 async def getUserFromDB(user_id, chat_id):
