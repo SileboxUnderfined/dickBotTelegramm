@@ -48,6 +48,7 @@ async def createQC(data):
     qc = QuickChart()
     qc.width = 500
     qc.height = 300
+    qc.device_pixel_ratio = 2
     qc.config = {
         "type": "pie",
         "data": {
