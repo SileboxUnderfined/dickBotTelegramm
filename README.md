@@ -28,15 +28,12 @@
    + `logs` - папка с логами. Логи сохраняются в формате `.log`. Создаётся автоматически
    + 
 ### Структура *data.db*:
-   + Таблица `users`
-   + Колонки:
+   + Таблица `users`:
      + `user_id` - айди пользователя (INTEGER)
      + `chat_id` - айди чата (INTEGER)
      + `dick_length` - длина кока (INTEGER)
      + `next_date` - дата КД (TEXT)
-   
-   + Таблица `chats`
-   + Колонки:
+   + Таблица `chats`:
      + `chat_id` - айди чата (INTEGER)
      + `fancy_operations` - возможность использовать сложные операции (INTEGER)
      + `admin` - айди админа (INTEGER)
