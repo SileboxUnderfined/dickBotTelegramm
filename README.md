@@ -26,17 +26,17 @@
    + `data.db` - файл базы данных sqlite3. Создавать вручную, иначе бот не запустится
    + `botFuncs.py` - вспомогательные функции бота
    + `logs` - папка с логами. Логи сохраняются в формате `.log`. Создаётся автоматически
-   + 
+
 ### Структура *data.db*:
    + Таблица `users`:
-     + `user_id` - айди пользователя (INTEGER)
-     + `chat_id` - айди чата (INTEGER)
-     + `dick_length` - длина кока (INTEGER)
-     + `next_date` - дата КД (TEXT)
+     + `user_id` - айди пользователя (`INTEGER`)
+     + `chat_id` - айди чата (`INTEGER`)
+     + `dick_length` - длина кока (`INTEGER`)
+     + `next_date` - дата КД (`TEXT`)
    + Таблица `chats`:
-     + `chat_id` - айди чата (INTEGER)
-     + `fancy_operations` - возможность использовать сложные операции (INTEGER)
-     + `admin` - айди админа (INTEGER)
+     + `chat_id` - айди чата (`INTEGER`)
+     + `fancy_operations` - возможность использовать сложные операции (`INTEGER`)
+     + `admin` - айди админа (`INTEGER`)
 
 ### Используемые библиотеки:
    + [pyTelegramBotAPI](https://pypi.org/project/pyTelegramBotAPI/)
