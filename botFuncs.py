@@ -63,11 +63,10 @@ async def createQC(data):
     return qc.get_url()
 
 
-async def getDick(now_dick=0):
+async def getDickFO(now_dick=0):
     new_dick = await genrand()
     choice = randint(0,3)
     result: int
-    operation: str
     if choice == 1:
         result = now_dick * new_dick
         operation = "*"
@@ -86,6 +85,11 @@ async def getDick(now_dick=0):
     elif result > now_dick + 100: result = now_dick + 100
     return new_dick, round(result), operation
 
+async def getDick(now_dick=0):
+    new_dick = await genrand()
+    result = now_dick + new_dick
+    if result < 0: result = 0
+    return new_dick, result
 
 async def getUserFromDB(user_id, chat_id):
     async with aiosqlite.connect("data.db") as db:
@@ -95,5 +99,22 @@ async def getUserFromDB(user_id, chat_id):
                 return False
             result = data[0]
             return result
+
+async def add_chat_to_table(chat_id, admin_id):
+    async with aiosqlite.connect("data.db") as db:
+        async with db.execute(f"SELECT * FROM chats WHERE chat_id={chat_id}") as cursor:
+            data = await cursor.fetchall()
+            if len(data) > 0: return
+        await db.execute(f"INSERT INTO chats (chat_id, fancy_operations, admin) VALUES ({chat_id},0,{admin_id})")
+        await db.commit()
+
+async def check_fancy_ops(chat_id):
+    async with aiosqlite.connect("data.db") as db:
+        async with db.execute(f"SELECT fancy_operations FROM chats WHERE chat_id = {chat_id}") as cursor:
+            data = await cursor.fetchall()
+            data = data[0][0]
+            if data == 0: return False
+
+    return True
 
 signal.signal(signal.SIGINT, exit_handler)

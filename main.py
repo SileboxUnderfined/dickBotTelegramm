@@ -7,9 +7,16 @@ bot = AsyncTeleBot(envv['BOT_TOKEN'])
 
 @bot.message_handler(commands=['start'])
 async def send_welcome(message):
+
     await bot.reply_to(message,"""привет дурак дебильный ебальный\nблагодаря этому боту ты можешь меряться письками с другими дебилами\nчтобы использовать эту бесконечно великую функцию, введи /dick\nвведи /help """)
     print('/start command for', message.from_user)
 
+@bot.my_chat_member_handler()
+async def handleStart(data):
+    chat_id = data.chat.id
+    admins = await bot.get_chat_administrators(chat_id)
+    admin_id = admins[0].user.id
+    await add_chat_to_table(chat_id=chat_id, admin_id=admin_id)
 
 @bot.message_handler(commands=['dick'])
 async def dick_func(message):
@@ -26,23 +33,32 @@ async def dick_func(message):
                 await db.execute(f"INSERT INTO users (user_id, dick_length, next_date, chat_id) VALUES ({user_id},{r}, {next_time}, {message.chat.id})")
                 await db.commit()
                 await bot.reply_to(message, f"Тебе создали новый хуй, поздравляю. Он равен {r} см.")
-            else:
-                async with db.execute(f"SELECT next_date FROM users WHERE user_id = {user_id} AND chat_id={chat_id}") as ct:
-                    next_timeU = await ct.fetchone()
-                    next_timeU = await getDateTime(next_timeU[0])
+                return
 
-                nowDate = datetime.now()
-                delta = next_timeU - nowDate
-                r = str(timedelta(seconds=delta.seconds)).split(":")
-                if nowDate < next_timeU:
-                    await bot.reply_to(message, f"Ты идиот. Жди ещё {r[0]} часов, {r[1]} минут и {r[2]} секунд")
-                else:
-                    now_dick = [user[2] for user in data if user[1] == user_id][0]
-                    new_dick, r, operation = await getDick(now_dick)
-                    await db.execute(f"UPDATE users SET dick_length = {r} WHERE user_id = {user_id} AND chat_id={chat_id}")
-                    await db.execute(f"UPDATE users SET next_date = {next_time} WHERE user_id = {user_id} AND chat_id={chat_id}")
-                    await db.commit()
-                    await bot.reply_to(message, f"Твой хер был обновлён на {operation}{new_dick}, поздравляю. Сейчас он равен {r}")
+        async with db.execute(f"SELECT next_date FROM users WHERE user_id = {user_id} AND chat_id={chat_id}") as ct:
+            next_timeU = await ct.fetchone()
+            next_timeU = await getDateTime(next_timeU[0])
+
+        nowDate = datetime.now()
+        delta = next_timeU - nowDate
+        r = str(timedelta(seconds=delta.seconds)).split(":")
+        if nowDate < next_timeU:
+            await bot.reply_to(message, f"Ты идиот. Жди ещё {r[0]} часов, {r[1]} минут и {r[2]} секунд")
+            return
+
+        now_dick = [user[2] for user in data if user[1] == user_id][0]
+        fancyOps = await check_fancy_ops(chat_id)
+        if fancyOps:
+            new_dick, r, operation = await getDickFO(now_dick)
+        else:
+            new_dick, r = await getDick(now_dick)
+        await db.execute(f"UPDATE users SET dick_length = {r} WHERE user_id = {user_id} AND chat_id={chat_id}")
+        await db.execute(f"UPDATE users SET next_date = {next_time} WHERE user_id = {user_id} AND chat_id={chat_id}")
+        await db.commit()
+        if fancyOps:
+            await bot.reply_to(message, f"Твой хер был обновлён на {operation}{new_dick}, поздравляю. Сейчас он равен {r}")
+            return
+        await bot.reply_to(message, f"Твой хер был обновлён на {new_dick}, поздравляю. Сейчас он равен {r}")
     print("/dick command for ", user_id)
 
 
@@ -198,6 +214,40 @@ async def global_top(message):
 
     print(text)
     await bot.reply_to(message, text)
+
+@bot.message_handler(commands=["fancy_ops"])
+async def fancy_ops(message):
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    admins = await bot.get_chat_administrators(chat_id)
+    admin_id = admins[0].user.id
+    if user_id != admin_id:
+        await bot.reply_to(message, "ты не админ, ты не можешь изменять эту настройку")
+        return
+
+    async with aiosqlite.connect("data.db") as db:
+        async with db.execute(f"SELECT fancy_operations FROM chats WHERE chat_id = {chat_id}") as cursor:
+            data = await cursor.fetchall()
+            print(data)
+            if len(data) == 0:
+                await add_chat_to_table(chat_id, admin_id)
+                await bot.reply_to(message, "множество других операций у вашей беседы выключено")
+                return
+
+        what_to_set: int
+        what_to_say: str
+        if data[0][0] == 0:
+            what_to_set = 1
+            what_to_say = 'включены'
+
+        else:
+            what_to_set = 0
+            what_to_say = 'выключены'
+
+        await db.execute(f"UPDATE chats SET fancy_operations = {what_to_set} WHERE chat_id = {chat_id}")
+        await db.commit()
+
+    await bot.reply_to(message, f"Дополнительные операции {what_to_say}")
 
 
 if __name__ in "__main__":
