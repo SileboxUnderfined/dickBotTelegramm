@@ -1,10 +1,16 @@
 from os import environ as envv
 from random import randint
+from telebot.async_telebot import types
 from datetime import datetime, timedelta
 from quickchart import QuickChart
 import sys, aiosqlite, signal
 
 timeFormat = "%Y%m%d%H%M%S"
+
+"""adminPanelButtons = {
+    "changeDickLength": types.InlineKeyboardButton('Изменить длину хуя',callback_data='change_dick_length'),
+    "eraseChat": types.InlineKeyboardButton('Стереть данные о чате', callback_data='erase_chat_data'),
+} """
 
 def exit_handler(sig, frame):
     print('exiting...')
@@ -116,5 +122,14 @@ async def check_fancy_ops(chat_id):
             if data == 0: return False
 
     return True
+
+
+"""def checkIsOwner(func):
+    def _wrapper(bot, user_id, chat_id):
+        if user_id != chat_id or user_id != envv['OWNER_ID']:
+            await bot.send_message(chat_id, "ты не владелец бота, тебе нельзя это использовать.\nЕсли ты владелец, то тебе нужно перейти в лс с ботом.")
+            return
+
+    return _wrapper"""
 
 signal.signal(signal.SIGINT, exit_handler)

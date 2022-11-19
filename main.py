@@ -23,6 +23,10 @@ async def dick_func(message):
     next_time = await getNextTime()
     user_id = int(message.from_user.id)
     chat_id = int(message.chat.id)
+    if user_id == chat_id:
+        await bot.reply_to(message, "ты не можешь делать это в лс с самим собой")
+        return
+
     async with aiosqlite.connect("data.db") as db:
         async with db.execute(f"SELECT * FROM users WHERE user_id = {user_id} AND chat_id = {chat_id}") as cursor:
             data = await cursor.fetchall()
@@ -203,6 +207,7 @@ async def global_top(message):
             end = int(envv['GL_TOP_END'])
             for user in data:
                 if start == end: break
+                if user[0] == user[2]: continue
                 print(user[0])
                 try:
                     username = await getUserName(bot, user[2], user[0])
@@ -249,6 +254,19 @@ async def fancy_ops(message):
 
     await bot.reply_to(message, f"Дополнительные операции {what_to_say}")
 
+"""
+@bot.message_handler(commands=['admin_tools'])
+async def adminPanel(message):
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+
+    if chat_id != user_id or user_id != envv["OWNER_ID"]:
+
+
+    markup = types.InlineKeyboardMarkup()
+
+    await bot.reply_to(message, "Используй кнопки для навигации")
+"""
 
 if __name__ in "__main__":
     logger = tb.logger
