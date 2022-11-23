@@ -263,4 +263,4 @@ if __name__ in "__main__":
     tb.logger.addHandler(logging.FileHandler(os.path.join('logs', f"{now}.log")))
 
     asyncio.run(bot.polling())
-    asyncio_helper.proxy = "socks5h://66.70.229.3:3838"
+    #asyncio_helper.proxy = "socks5h://66.70.229.3:3838"
