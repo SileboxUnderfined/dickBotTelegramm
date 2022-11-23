@@ -254,20 +254,6 @@ async def fancy_ops(message):
 
     await bot.reply_to(message, f"Дополнительные операции {what_to_say}")
 
-"""
-@bot.message_handler(commands=['admin_tools'])
-async def adminPanel(message):
-    chat_id = message.chat.id
-    user_id = message.from_user.id
-
-    if chat_id != user_id or user_id != envv["OWNER_ID"]:
-
-
-    markup = types.InlineKeyboardMarkup()
-
-    await bot.reply_to(message, "Используй кнопки для навигации")
-"""
-
 if __name__ in "__main__":
     logger = tb.logger
     tb.logger.setLevel(logging.DEBUG)
