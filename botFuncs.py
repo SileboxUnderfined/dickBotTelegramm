@@ -4,11 +4,13 @@ from telebot.async_telebot import types
 from datetime import datetime, timedelta
 from quickchart import QuickChart
 import sys, aiosqlite, signal
+from main import bot
 
 timeFormat = "%Y%m%d%H%M%S"
 
 def exit_handler(sig, frame):
     print('exiting...')
+    bot.close_session()
     sys.exit(0)
 
 
