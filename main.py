@@ -1,5 +1,5 @@
 import telebot.async_telebot as tb
-from telebot.async_telebot import AsyncTeleBot, types
+from telebot.async_telebot import AsyncTeleBot, types, asyncio_helper
 import asyncio, logging, os
 from botFuncs import *
 
@@ -263,3 +263,4 @@ if __name__ in "__main__":
     tb.logger.addHandler(logging.FileHandler(os.path.join('logs', f"{now}.log")))
 
     asyncio.run(bot.polling())
+    asyncio_helper.proxy = "socks5h://66.70.229.3:3838"
