@@ -1,5 +1,5 @@
 import telebot.async_telebot as tb
-from telebot.async_telebot import AsyncTeleBot, types, asyncio_helper
+from telebot.async_telebot import AsyncTeleBot, types
 import asyncio, logging, os
 from botFuncs import *
 
