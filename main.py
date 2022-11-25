@@ -303,6 +303,9 @@ async def give_dick_func(message):
     reciever = await getUserId(bot, chat_id, reciever_nick)
     reciever_dick = await getUserFromDB(reciever, chat_id)
     reciever_dick = reciever_dick[1]
+    if reciever == user_id:
+        await bot.reply_to(message, 'ты не можешь делиться хуём с самим собой')
+        return
 
     async with aiosqlite.connect('data.db') as db:
         await db.execute(f"UPDATE users SET dick_length = {dick_length - amount} WHERE user_id = {user_id} AND chat_id = {chat_id}")
