@@ -140,13 +140,23 @@ async def accept_invite(call):
         return
 
     user_dick_length = await getUserFromDB(user_id,chat_id)
+    sender_dick_length = await getUserFromDB(sender_id, chat_id)
     if not user_dick_length:
         await bot.send_message(chat_id,f"{await getUserName(bot, chat_id,user_id)}, сначала отрасти хуй")
         return
 
+    if not sender_dick_length:
+        await bot.send_message(chat_id,f"{await getUserName(bot, chat_id,sender_id)}, сначала отрасти хуй")
+        return
+
     user_dick_length = user_dick_length[1]
+    sender_dick_length = sender_dick_length[1]
     if user_dick_length < bet:
         await bot.send_message(chat_id,f"У {await getUserName(bot, chat_id,user_id)} хуй ещё не дорос чтобы играть в такую ставку.")
+        return
+
+    if sender_dick_length < bet:
+        await bot.send_message(chat_id,f"У {await getUserName(bot, chat_id,sender_id)} хуй ещё не дорос чтобы играть в такую ставку.")
         return
 
     await bot.delete_message(chat_id, call.message.id)
@@ -263,4 +273,3 @@ if __name__ in "__main__":
     tb.logger.addHandler(logging.FileHandler(os.path.join('logs', f"{now}.log")))
 
     asyncio.run(bot.polling())
-    #asyncio_helper.proxy = "socks5h://66.70.229.3:3838"
