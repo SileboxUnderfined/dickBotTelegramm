@@ -9,7 +9,6 @@ bot = AsyncTeleBot(envv['BOT_TOKEN'])
 async def send_welcome(message):
 
     await bot.reply_to(message,"""привет дурак дебильный ебальный\nблагодаря этому боту ты можешь меряться письками с другими дебилами\nчтобы использовать эту бесконечно великую функцию, введи /dick\nвведи /help """)
-    print('/start command for', message.from_user)
 
 @bot.my_chat_member_handler()
 async def handleStart(data):
@@ -104,25 +103,29 @@ async def dice_func(message):
     text = message.text.split()
     chat_id = message.chat.id
     user_id = message.from_user.id
-    if len(text) == 1: await bot.reply_to(message,"Ты не указал ставку!")
-    else:
-        dick_length = await getUserFromDB(user_id,chat_id)
-        if not dick_length:
-            await bot.reply_to(message,"сначала отрасти хуй")
-            return
-        dick_length = dick_length[1]
-        bet = int(text[1])
-        if bet <= 0:
-            await bot.reply_to(message,"поставь ставку с положительным числом.")
-            return
-        if bet > dick_length:
-            await bot.reply_to(message,"У тебя хуй ещё недорос.")
-            return
+    if len(text) == 1:
+        await bot.reply_to(message,"Ты не указал ставку!")
+        return
 
-        markup = types.InlineKeyboardMarkup()
-        accept_button = types.InlineKeyboardButton('принять приглашение',callback_data="accept_invite")
-        markup.add(accept_button)
-        await bot.reply_to(message, f"{user_id}\n{await getUserName(bot, chat_id, user_id)} приглашает вас на меряние письками используя шестигранный кубик!\nСтавка: {bet} см\nЧтобы принять приглашение, нажмите на кнопку ниже.",reply_markup=markup)
+    dick_length = await getUserFromDB(user_id,chat_id)
+    if not dick_length:
+        await bot.reply_to(message,"сначала отрасти хуй")
+        return
+
+    dick_length = dick_length[1]
+    bet = int(text[1])
+
+    if bet <= 0:
+        await bot.reply_to(message,"поставь ставку с положительным числом.")
+        return
+    if bet > dick_length:
+        await bot.reply_to(message,"У тебя хуй ещё недорос.")
+        return
+
+    markup = types.InlineKeyboardMarkup()
+    accept_button = types.InlineKeyboardButton('принять приглашение',callback_data="accept_invite")
+    markup.add(accept_button)
+    await bot.reply_to(message, f"{user_id}\n{await getUserName(bot, chat_id, user_id)} приглашает вас на меряние письками используя шестигранный кубик!\nСтавка: {bet} см\nЧтобы принять приглашение, нажмите на кнопку ниже.",reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "accept_invite")
@@ -266,6 +269,47 @@ async def fancy_ops(message):
         await db.commit()
 
     await bot.reply_to(message, f"Дополнительные операции {what_to_say}")
+
+@bot.message_handler(commands=['give_dick'])
+async def give_dick_func(message):
+    text = message.text.split()
+    user_id = message.from_user.id
+    chat_id = message.chat.id
+    reciever_nick = text[2].replace('@',"")
+    if len(text) == 1:
+        await bot.reply_to(message, 'ты не указал размер дарования!')
+        return
+
+    elif len(text) == 2:
+        await bot.reply_to(message, 'ты не указал получателя')
+        return
+
+    dick_length = await getUserFromDB(user_id, chat_id)
+    if not dick_length:
+        await bot.reply_to(message, 'сначала отрасти хуй')
+        return
+
+    dick_length = dick_length[1]
+    amount = int(text[1])
+
+    if amount <= 0:
+        await bot.reply_to(message, 'укажи положительный размер')
+        return
+
+    if amount > dick_length:
+        await bot.reply_to(message, 'сначала отрасти хуй')
+        return
+
+    reciever = await getUserId(bot, chat_id, reciever_nick)
+    reciever_dick = await getUserFromDB(reciever, chat_id)
+    reciever_dick = reciever_dick[1]
+
+    async with aiosqlite.connect('data.db') as db:
+        await db.execute(f"UPDATE users SET dick_length = {dick_length - amount} WHERE user_id = {user_id} AND chat_id = {chat_id}")
+        await db.execute(f"UPDATE users SET dick_length = {reciever_dick + amount} WHERE user_id = {reciever} AND chat_id = {chat_id}")
+        await db.commit()
+
+    await bot.reply_to(message, f'Теперь у {reciever_nick} хуй равен {reciever_dick + amount}\nА у тебя теперь хуй равен {dick_length - amount}')
 
 if __name__ in "__main__":
     logger = tb.logger

@@ -44,6 +44,14 @@ async def getUserName(bot, chat_id, user_id):
     if user_info.user.username == None: return user_info.user.first_name
     return user_info.user.username
 
+async def getUserId(bot, chat_id, username):
+    async with aiosqlite.connect('data.db') as db:
+        async with db.execute(f"SELECT user_id FROM users WHERE chat_id = {chat_id}") as cursor:
+            data = await cursor.fetchall()
+            for user in data:
+                nick = await getUserName(bot, chat_id, user[0])
+                if nick == username:
+                    return user[0]
 
 async def createQC(data):
     qc = QuickChart()
