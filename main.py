@@ -227,10 +227,10 @@ async def global_top(message):
                 async with db.execute(f"SELECT fancy_operations FROM chats WHERE chat_id = {user[2]}") as c1:
                     fanops = await c1.fetchall()
                     fanops = fanops[0][0]
-                    isfanops = 'выключены'
+                    isfanops = 'выкл'
                     if fanops == 1:
-                        isfanops = 'включены'
-                text += f'{start+1}: {username} - {user[1]} см. Ебанутые операции {isfanops}\n'
+                        isfanops = 'вкл'
+                text += f'{start+1}: {username} - {user[1]} см. Еб. Оп. {isfanops}\n'
                 start += 1
 
     print(text)
