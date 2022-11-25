@@ -178,18 +178,19 @@ async def accept_invite(call):
 
     if winner == looser:
         await bot.send_message(chat_id,"Никто не победил, письки остаются при вас.")
-    else:
-        winner_name = await getUserName(bot, chat_id,winner)
-        looser_name = await getUserName(bot, chat_id,looser)
-        await bot.send_message(chat_id,f"Победил: {winner_name}.\nТеперь {looser_name} отрежут хуй на {bet} см.\nА {winner_name} получит расширение хуя на {bet} см.")
-        async with aiosqlite.connect("data.db") as db:
-            winner_dick = await getUserFromDB(winner, chat_id)
-            looser_dick = await getUserFromDB(looser, chat_id)
-            winner_dick = winner_dick[1]
-            looser_dick = looser_dick[1]
-            await db.execute(f"UPDATE users SET dick_length = {winner_dick+bet} WHERE user_id = {winner} AND chat_id = {chat_id}")
-            await db.execute(f"UPDATE users SET dick_length = {looser_dick-bet} WHERE user_id = {looser} AND chat_id = {chat_id}")
-            await db.commit()
+        return
+
+    winner_name = await getUserName(bot, chat_id,winner)
+    looser_name = await getUserName(bot, chat_id,looser)
+    await bot.send_message(chat_id,f"Победил: {winner_name}.\nТеперь {looser_name} отрежут хуй на {bet} см.\nА {winner_name} получит расширение хуя на {bet} см.")
+    async with aiosqlite.connect("data.db") as db:
+        winner_dick = await getUserFromDB(winner, chat_id)
+        looser_dick = await getUserFromDB(looser, chat_id)
+        winner_dick = winner_dick[1]
+        looser_dick = looser_dick[1]
+        await db.execute(f"UPDATE users SET dick_length = {winner_dick+bet} WHERE user_id = {winner} AND chat_id = {chat_id}")
+        await db.execute(f"UPDATE users SET dick_length = {looser_dick-bet} WHERE user_id = {looser} AND chat_id = {chat_id}")
+        await db.commit()
 
 
 @bot.message_handler(commands=["my_dick"])
@@ -255,15 +256,11 @@ async def fancy_ops(message):
                 await bot.reply_to(message, "множество других операций у вашей беседы выключено")
                 return
 
-        what_to_set: int
-        what_to_say: str
+        what_to_set = 0
+        what_to_say = 'выключены'
         if data[0][0] == 0:
             what_to_set = 1
             what_to_say = 'включены'
-
-        else:
-            what_to_set = 0
-            what_to_say = 'выключены'
 
         await db.execute(f"UPDATE chats SET fancy_operations = {what_to_set} WHERE chat_id = {chat_id}")
         await db.commit()
