@@ -210,6 +210,7 @@ async def global_top(message):
     text = f"Глобальный топ {envv['GL_TOP_END']} хуеводов:\n"
     async with aiosqlite.connect("data.db") as db:
         async with db.execute("SELECT user_id, dick_length, chat_id FROM users") as cursor:
+
             data = await cursor.fetchall()
             data = await getSorted(data)
             print(data)
@@ -223,8 +224,13 @@ async def global_top(message):
                     username = await getUserName(bot, user[2], user[0])
                 except Exception:
                     continue
-
-                text += f'{start+1}: {username} - {user[1]} см\n'
+                async with db.execute(f"SELECT fancy_operations FROM chats WHERE chat_id = {user[2]}") as c1:
+                    fanops = await c1.fetchall()
+                    fanops = fanops[0][0]
+                    isfanops = 'выключены'
+                    if fanops == 1:
+                        isfanops = 'включены'
+                text += f'{start+1}: {username} - {user[1]} см. Ебанутые операции {isfanops}\n'
                 start += 1
 
     print(text)
