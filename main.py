@@ -212,6 +212,7 @@ async def my_dick(message):
 @bot.message_handler(commands=["global_top"])
 async def global_top(message):
     text = f"Глобальный топ {envv['GL_TOP_END']} хуеводов:\n"
+    globalDick = 0
     async with aiosqlite.connect("data.db") as db:
         async with db.execute("SELECT user_id, dick_length, chat_id FROM users") as cursor:
 
@@ -235,9 +236,11 @@ async def global_top(message):
                     if fanops == 1:
                         isfanops = 'вкл'
                 text += f'{start+1}: {username} - {user[1]} см. Еб. Оп. {isfanops}\n'
+                globalDick += int(user[1])
                 start += 1
 
     print(text)
+    text += f'Глобальный хуй: {globalDick}'
     await bot.reply_to(message, text)
 
 @bot.message_handler(commands=["fancy_ops"])
