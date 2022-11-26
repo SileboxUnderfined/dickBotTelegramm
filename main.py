@@ -240,7 +240,7 @@ async def global_top(message):
                 start += 1
 
     print(text)
-    text += f'Глобальный хуй: {globalDick}'
+    text += f'Глобальный хуй: {globalDick} см.'
     await bot.reply_to(message, text)
 
 @bot.message_handler(commands=["fancy_ops"])
