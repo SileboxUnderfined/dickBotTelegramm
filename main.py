@@ -68,17 +68,22 @@ async def dick_func(message):
 @bot.message_handler(commands=["top"])
 async def top_func(message):
     chat_id = message.chat.id
+    totaldick = 0
     async with aiosqlite.connect("data.db") as db:
         async with db.execute(f"SELECT user_id, dick_length FROM users WHERE chat_id = {chat_id}") as cursor:
             data = await cursor.fetchall()
-            if len(data) == 0: await bot.reply_to(message,"вы пока не призывали письки")
-            else:
-                data = await getSorted(data)
+            if len(data) == 0:
+                await bot.reply_to(message,"вы пока не призывали письки")
+                return
+            data = await getSorted(data)
 
-                result = f"Топ лучших:\n"
-                for user in range(len(data)):
-                    result += f"{user+1}: {await getUserName(bot, chat_id,data[user][0])} с хуём в размере {data[user][1]} см\n"
-                await bot.reply_to(message,result)
+            result = f"Топ лучших:\n"
+            for user in range(len(data)):
+                result += f"{user+1}: {await getUserName(bot, chat_id,data[user][0])} с хуём в размере {data[user][1]} см\n"
+                totaldick += int(data[user][1])
+
+            result += f'Тотальный хуй: {totaldick}'
+            await bot.reply_to(message,result)
 
 
 @bot.message_handler(commands=["graph"])
