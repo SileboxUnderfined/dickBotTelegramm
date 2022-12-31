@@ -100,6 +100,11 @@ async def getDick(now_dick=0):
     if result < 0: result = 0
     return new_dick, result
 
+async def getDickNE(now_dick=0):
+    new_dick = randint(1,20)
+    result = now_dick + new_dick
+    return new_dick, result
+
 async def getUserFromDB(user_id, chat_id):
     async with aiosqlite.connect("data.db") as db:
         async with db.execute(f"SELECT user_id, dick_length FROM users WHERE user_id = {user_id} AND chat_id = {chat_id}") as cursor:

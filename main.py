@@ -32,7 +32,8 @@ async def dick_func(message):
             print(data)
             if len(data) == 0:
                 print([element for element in data])
-                new_dick, r = await getDick()
+                #new_dick, r = await getDick()
+                new_dick, r = await getDickNE()
                 await db.execute(f"INSERT INTO users (user_id, dick_length, next_date, chat_id) VALUES ({user_id},{r}, {next_time}, {message.chat.id})")
                 await db.commit()
                 await bot.reply_to(message, f"Тебе создали новый хуй, поздравляю. Он равен {r} см.")
@@ -54,14 +55,15 @@ async def dick_func(message):
         if fancyOps:
             new_dick, r, operation = await getDickFO(now_dick)
         else:
-            new_dick, r = await getDick(now_dick)
+            #new_dick, r = await getDick(now_dick)
+            new_dick, r = await getDickNE(now_dick)
         await db.execute(f"UPDATE users SET dick_length = {r} WHERE user_id = {user_id} AND chat_id={chat_id}")
         await db.execute(f"UPDATE users SET next_date = {next_time} WHERE user_id = {user_id} AND chat_id={chat_id}")
         await db.commit()
         if fancyOps:
             await bot.reply_to(message, f"Твой хер был обновлён на {operation}{new_dick}, поздравляю. Сейчас он равен {r}")
             return
-        await bot.reply_to(message, f"Твой хер был обновлён на {new_dick}, поздравляю. Сейчас он равен {r}")
+        await bot.reply_to(message, f"РЕЖИМ НОВОГО ГОДА\nЛЮБОЕ ОБНОВЛЕНИЕ ХУЯ БУДЕТ В ДИАПАЗОНЕ ОТ 1 ДО 20\nТвой хер был обновлён на {new_dick}, поздравляю. Сейчас он равен {r}")
     print("/dick command for ", user_id)
 
 
